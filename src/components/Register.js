@@ -1,6 +1,58 @@
-import React from 'react'
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify';
+import { AuthContext } from '../context/UserContext';
+import { GoogleAuthProvider } from "firebase/auth";
+
+
 
 const Register = () => {
+  const navigate = useNavigate();
+  const {createUser,updateName,verifyEmail,signInWithGoogle} = useContext(AuthContext)
+  const googleProvider = new GoogleAuthProvider();
+
+  const handleSubmit=(event)=>{
+    event.preventDefault();
+    const form = event.target;
+    const name = form.name.value;
+    const email = form.email.value;
+    const password = form.password.value;
+    form.reset();
+
+    createUser(email,password)
+    .then(result=>{
+      console.log(result.user);
+      toast.success('Registration Successful')
+      updateName(name)
+      .then(()=>{
+        toast.success('Name update Successful')
+        navigate('/profile')
+        verifyEmail()
+        .then(()=>{
+          toast.success('Email verification link sent.')
+        })
+      })
+      .catch(error=>{
+        toast.error(error.message)
+      })
+    })
+    .catch(error=>{
+      toast.error(error.message)
+    })
+  };
+
+  const handleGoogleSignIn =()=>{
+    signInWithGoogle(googleProvider)
+    .then(result=>{
+      console.log(result.user);
+      toast.success('Google sign in success')
+    })
+    .catch(error=>{
+      toast.error(error.message)
+    })
+  };
+
+
   return (
     <div className='flex justify-center items-center pt-8'>
       <div className='flex flex-col max-w-md p-6 rounded-md sm:p-10 bg-gray-100 text-gray-900'>
@@ -8,7 +60,7 @@ const Register = () => {
           <h1 className='my-3 text-4xl font-bold'>Register</h1>
           <p className='text-sm text-gray-400'>Create a new account</p>
         </div>
-        <form
+        <form onSubmit={handleSubmit}
           noValidate=''
           action=''
           className='space-y-12 ng-untouched ng-pristine ng-valid'
@@ -74,7 +126,7 @@ const Register = () => {
           <div className='flex-1 h-px sm:w-16 dark:bg-gray-700'></div>
         </div>
         <div className='flex justify-center space-x-4'>
-          <button aria-label='Log in with Google' className='p-3 rounded-sm'>
+          <button onClick={handleGoogleSignIn} aria-label='Log in with Google' className='p-3 rounded-sm'>
             <svg
               xmlns='http://www.w3.org/2000/svg'
               viewBox='0 0 32 32'
@@ -102,12 +154,11 @@ const Register = () => {
             </svg>
           </button>
         </div>
-        <p className='px-6 text-sm text-center text-gray-400'>
+        <p className='px-6 text-sm text-center text-purple-700'>
           Already have an account yet?{' '}
-          <a href='#' className='hover:underline text-gray-600'>
+          <Link to ='/login' className='hover:underline text-gray-600'>
             Sign In
-          </a>
-          .
+          </Link>
         </p>
       </div>
     </div>
